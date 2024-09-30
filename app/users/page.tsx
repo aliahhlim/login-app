@@ -8,6 +8,7 @@ import Carousell from "../components/carousellApp";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import NextAuth from "next-auth";
+import React from "react";
 
 type FieldType = {
   email?: string;

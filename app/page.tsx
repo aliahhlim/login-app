@@ -7,6 +7,7 @@ import Link from "next/link";
 import Carousell from "./components/carousellApp";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import React from "react";
 
 type FieldType = {
   name?: string;

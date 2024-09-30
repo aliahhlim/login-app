@@ -40,10 +40,10 @@ export default NextAuth({
         try {
           // establish SQL connection (assuming you have configured a SQL server connection)
           await sql.connect({
-            user: process.env.DB_USER,
-            password: process.env.DB_PASSWORD,
-            server: process.env.DB_SERVER,
-            database: process.env.DB_NAME,
+            user: 'sa',
+            password: 'dockerStrongPwd123',
+            server: 'localhost',
+            database: 'userLogin',
             options: {
               encrypt: true, 
               trustServerCertificate: true, // use this if on a local dev environment

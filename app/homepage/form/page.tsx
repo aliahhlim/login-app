@@ -1,20 +1,23 @@
-// Make sure this is the very first line in the file
 "use client";
 import type { FormProps } from "antd";
-import { Form, Input, Button, Divider, message } from "antd"; //import the components in antd
-import { Image } from "antd"; // for image importing
+import { Form, Input, Button, Divider, message, Skeleton } from "antd"; // Importing necessary components
 import Link from "next/link"; // Importing Link component for navigation
 import React from "react";
 import { useState } from "react";
+import axios from "axios";
+
 /*
 Create a form layout with the following fields:- 
-Company Name- Company ID - Address Line 1/2/3- Country- State- City- Postcode- Description*/
+Company Name- Company ID - Address Line 1/2/3- Country- State- City- Postcode- Description
+*/
 
-//for validation purposes
+// For validation purposes
 type FieldType = {
   name?: string;
   id?: number;
-  address?: string;
+  addressLine1?: string;
+  addressLine2?: string;
+  addressLine3?: string;
   country?: string;
   state?: string;
   city?: string;
@@ -22,53 +25,46 @@ type FieldType = {
   description?: string;
 };
 
-const onFinish: FormProps<FieldType>["onFinish"] = (values) => {
-  console.log("Success:", values);
-};
+export default function FormPage() {
+  <Skeleton active />;
+  const [loading, setLoading] = useState<boolean>(false);
 
-//main
-
-export default function Home({
-  name,
-  id,
-  address,
-  country,
-  state,
-  city,
-  postcode,
-  description,
-}: FieldType) {
-  const [loading, setLoading] = useState<boolean>(true);
-  /*
-  const onFinish: FormProps<FieldType>["onFinish"] = async (
-    values: FieldType
-  ) => {
+  const onFinish: FormProps<FieldType>["onFinish"] = async (values) => {
     console.log("Form values:", values);
-    setLoading(true);
+    setLoading(true); // Start loading state
+
     try {
-      const response = await fetch("http://localhost:4000/api/user", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(values),
-      });
+      const response = await axios.post(
+        "http://localhost:4000/application",
+        values
+      );
 
-      const result = await response.json();
-
-      if (response.ok) {
-        message.success(result.message);
+      if (response.status === 201) {
+        message.success("Application submitted successfully!");
       } else {
-        message.error(result.message);
+        message.error("Failed to submit application.");
       }
-      console.log("Response:", result);
+      console.log("Response:", response.data);
     } catch (error) {
-      console.error("Error occurred:", error);
-      message.error("An error occurred during registration");
+      if (axios.isAxiosError(error) && error.response) {
+        if (error.response.status === 409) {
+          // Assuming 409 Conflict for duplicate Company ID
+          message.error(
+            "Company ID already exists. Please use a different ID."
+          );
+        } else {
+          message.error(
+            "Failed to submit application: " + error.response.data.message
+          );
+        }
+      } else {
+        console.error("Error occurred:", error);
+        message.error("An error occurred during submission.");
+      }
     } finally {
-      setLoading(false);
+      setLoading(false); // End loading state
     }
-  };*/
+  };
 
   const onFinishFailed: FormProps<FieldType>["onFinishFailed"] = (
     errorInfo
@@ -78,14 +74,14 @@ export default function Home({
 
   return (
     <>
-      <main //yg belakang skali
+      <main
         style={{
-          display: "flex", //alignment
+          display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          minHeight: "100vh", //to center content
-          //backgroundColor: "#f0f2f5",
-          background: "linear-gradient(#c3e3ff, pink, #d09ef5, #c3e3ff)",
+          minHeight: "100vh",
+          backgroundColor: "lightblue",
+          padding: "20px",
         }}
       >
         <div
@@ -93,30 +89,41 @@ export default function Home({
             display: "flex",
             backgroundColor: "white",
             borderRadius: "30px",
-            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)", // Shadow
-            padding: "10px",
-            //width: "80%", // Adjust container width as needed
-            maxWidth: "1000px", // Maximum width for responsiveness
+            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.4)",
+            padding: "30px",
+            width: "80%",
+            maxWidth: "500px",
+            justifyContent: "center",
+            alignItems: "center",
           }}
         >
-          <div // form punya div
-          //style={{ marginRight: "auto" }}
-          >
+          <div>
             <Form
               layout="vertical"
               style={{
                 width: "100%",
-                marginRight: "150px",
-                marginLeft: "30px",
-              }} // Full width for the form
+                justifyContent: "center",
+                alignItems: "center",
+              }}
               onFinish={onFinish}
               onFinishFailed={onFinishFailed}
             >
+              <Button
+                style={{
+                  marginTop: "0px",
+                  color: "#fff",
+                  backgroundColor: "#000",
+                }}
+                href="/homepage"
+              >
+                Back to Home Page
+              </Button>
               <div style={{ marginBottom: "20px", textAlign: "left" }}>
                 <h2
                   style={{
                     fontSize: "35px",
                     color: "black",
+                    marginTop: "10px",
                   }}
                 >
                   Application Form
@@ -127,30 +134,29 @@ export default function Home({
               <Form.Item
                 label="Company Name"
                 name="name"
-                //required
                 style={{ marginBottom: "20px" }}
                 rules={[
-                  { required: true, message: "Please input company name!" }, // Validation rule
+                  { required: true, message: "Please input company name!" },
                 ]}
               >
                 <Input
                   placeholder="Enter company's name"
                   style={{
                     padding: "10px",
+                    width: "400px",
                     borderRadius: "8px",
                     borderColor: "#d9d9d9",
                   }}
                 />
               </Form.Item>
 
-              {/* Email Field */}
+              {/* Company ID Field */}
               <Form.Item
                 label="Company ID"
                 name="id"
-                //required
                 style={{ marginBottom: "20px" }}
                 rules={[
-                  { required: true, message: "Please input company's ID" }, // Validation rule
+                  { required: true, message: "Please input company's ID" },
                 ]}
               >
                 <Input
@@ -159,55 +165,42 @@ export default function Home({
                     padding: "10px",
                     borderRadius: "8px",
                     borderColor: "#d9d9d9",
+                    width: "400px",
                   }}
                 />
               </Form.Item>
 
-              <Form.Item
-                label="Address"
-                name="address"
-                //required
-                style={{ marginBottom: "30px" }}
-                rules={[
-                  { required: true, message: "Please input your address!" }, // Validation rule
-                ]}
-              >
-                <Input
-                  placeholder="Address Line 1"
-                  style={{
-                    padding: "10px",
-                    borderRadius: "8px",
-                    borderColor: "#d9d9d9",
-                    marginBottom: "10px",
-                  }}
-                />
-                <Input
-                  placeholder="Address Line 2"
-                  style={{
-                    padding: "10px",
-                    borderRadius: "8px",
-                    borderColor: "#d9d9d9",
-                    marginBottom: "10px",
-                  }}
-                />
-                <Input
-                  placeholder="Address Line 3"
-                  style={{
-                    padding: "10px",
-                    borderRadius: "8px",
-                    borderColor: "#d9d9d9",
-                  }}
-                />
+              {/* Address Fields */}
+              <Form.Item label="Address" required>
+                <Form.Item
+                  name="addressLine1"
+                  style={{ marginBottom: 0 }}
+                  rules={[
+                    { required: true, message: "Please input address line 1!" },
+                  ]}
+                >
+                  <Input placeholder="Address Line 1" />
+                </Form.Item>
+                <Form.Item
+                  name="addressLine2"
+                  style={{ marginBottom: 0 }}
+                  rules={[
+                    { required: true, message: "Please input address line 2!" },
+                  ]}
+                >
+                  <Input placeholder="Address Line 2" />
+                </Form.Item>
+                <Form.Item name="addressLine3" style={{ marginBottom: 0 }}>
+                  <Input placeholder="Address Line 3 (Optional)" />
+                </Form.Item>
               </Form.Item>
 
+              {/* Country Field */}
               <Form.Item
                 label="Country"
                 name="country"
-                //required
                 style={{ marginBottom: "20px" }}
-                rules={[
-                  { required: true, message: "Please input country!" }, // Validation rule
-                ]}
+                rules={[{ required: true, message: "Please input country!" }]}
               >
                 <Input
                   placeholder="Enter country"
@@ -219,15 +212,12 @@ export default function Home({
                 />
               </Form.Item>
 
-              {/*state*/}
+              {/* State Field */}
               <Form.Item
                 label="State"
                 name="state"
-                //required
                 style={{ marginBottom: "20px" }}
-                rules={[
-                  { required: true, message: "Please input state!" }, // Validation rule
-                ]}
+                rules={[{ required: true, message: "Please input state!" }]}
               >
                 <Input
                   placeholder="Enter State"
@@ -239,15 +229,12 @@ export default function Home({
                 />
               </Form.Item>
 
-              {/*city*/}
+              {/* City Field */}
               <Form.Item
                 label="City"
                 name="city"
-                //required
                 style={{ marginBottom: "20px" }}
-                rules={[
-                  { required: true, message: "Please input city!" }, // Validation rule
-                ]}
+                rules={[{ required: true, message: "Please input city!" }]}
               >
                 <Input
                   placeholder="Enter city"
@@ -259,15 +246,12 @@ export default function Home({
                 />
               </Form.Item>
 
-              {/*postcode*/}
+              {/* Postcode Field */}
               <Form.Item
                 label="Postcode"
                 name="postcode"
-                //required
                 style={{ marginBottom: "20px" }}
-                rules={[
-                  { required: true, message: "Please input postcode!" }, // Validation rule
-                ]}
+                rules={[{ required: true, message: "Please input postcode!" }]}
               >
                 <Input
                   placeholder="Enter postcode"
@@ -276,18 +260,18 @@ export default function Home({
                     padding: "10px",
                     borderRadius: "8px",
                     borderColor: "#d9d9d9",
+                    width: "400px",
                   }}
                 />
               </Form.Item>
 
-              {/*description*/}
+              {/* Description Field */}
               <Form.Item
                 label="Description"
                 name="description"
-                //required
                 style={{ marginBottom: "20px" }}
                 rules={[
-                  { required: true, message: "Please input description!" }, // Validation rule
+                  { required: true, message: "Please input description!" },
                 ]}
               >
                 <Input
@@ -308,13 +292,14 @@ export default function Home({
               <Form.Item>
                 <Button
                   htmlType="submit"
+                  type="primary"
+                  loading={loading} // Add loading state to button
                   style={{
-                    backgroundColor: "#000",
-                    color: "#fff",
                     width: "100%",
-                    //padding: "10px 15px",
+                    padding: "10px 15px",
                     borderRadius: "8px",
-                    fontSize: "11px",
+                    fontSize: "18px",
+                    fontWeight: "500",
                   }}
                 >
                   Apply Now

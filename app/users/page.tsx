@@ -1,14 +1,16 @@
 // Make sure this is the very first line in the file
 "use client";
 import type { FormProps } from "antd";
-import { Form, Input, Button, Divider } from "antd";
+import { Form, Input, Button, Divider, message } from "antd";
 import { Image } from "antd";
 import Link from "next/link";
 import Carousell from "../components/carousellApp";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 import NextAuth from "next-auth";
 import React from "react";
+import { setCookie } from "cookies-next";
 
 type FieldType = {
   email?: string;
@@ -16,22 +18,49 @@ type FieldType = {
 };
 
 export default function Signin() {
+  const { data: session, status, update } = useSession();
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
 
   const onFinish = async (values: FieldType) => {
-    const result = await signIn("credentials", {
-      redirect: false,
-      email: values.email,
-      password: values.password,
-    });
+    setIsLoading(true);
+    console.log("Attempting login...");
 
-    if (result?.error) {
-      console.error("Login failed:", result.error);
-    } else {
-      console.log("Login successful");
-      router.push("/homepage");
+    try {
+      const result = await signIn("credentials", {
+        redirect: false,
+        email: values.email,
+        password: values.password,
+      });
+
+      if (result?.error) {
+        console.error("Login failed:", result.error);
+        // Handle error (e.g., show error message to user)
+      } else {
+        console.log("Login successful, waiting for session...");
+
+        // Wait for the session to update
+        //await update();
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      // Handle this error (e.g., show error message to user)
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    // Check session status
+    if (status === "authenticated" && session) {
+      console.log("Session established:", session);
+      router.push("/homepage");
+    } //else {
+    //   message.error("Establishing session, please login again.");
+    //   console.error("Session not established after login");
+    //   // Handle this error (e.g., show error message to user)
+    // }
+  }, [session, status]);
 
   const onFinishFailed: FormProps<FieldType>["onFinishFailed"] = (
     errorInfo

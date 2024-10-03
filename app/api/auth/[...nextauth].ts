@@ -74,6 +74,25 @@ export default NextAuth({
       },
     }),
   ],
+  session:{
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60,
+  },
+
+  jwt: {
+    secret: 'V9LvBRPf7UEdmsnxTGopWPAucYoG3fCMmS3eSLsdtaU', // Add your secret here
+  },
+  // cookies: {
+  //   sessionToken: {
+  //     name: "token",
+  //     options: {
+  //       httpOnly: true,
+  //       sameSite: "strict",
+  //       path: "/",
+  //       secure: process.env.NODE_ENV === "production",
+  //     },
+  //   },
+  // },
 
   pages: {
     signIn: "/users", // Your custom login page
@@ -82,127 +101,42 @@ export default NextAuth({
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id; // Store user ID in the token
+        console.log("JWT callback - user:", user);
+        token.id = user.id; // Add user ID to the token
       }
+      console.log("JWT callback - token:", token);
       return token;
     },
     async session({ session, token }) {
+      console.log("Session callback - token:", token);
       if (session.user) {
-        session.user.id = token.id; // Include user ID in the session
+        session.user.id = token.id; // Add user ID to the session
       }
+      console.log("Session callback - session:", session);
       return session;
     },
-    async redirect({ url, baseUrl }) {
-      return url.startsWith(baseUrl) ? url : baseUrl;
+    
+    // async redirect({ url, baseUrl }) {
+    //   //return url.startsWith(baseUrl) ? url : baseUrl;
+    //   if (url.startsWith('/')) {
+    //     return `${baseUrl}${url}`
+    //   } else if (url.startsWith(baseUrl)) {
+    //     return url
+    //   }
+    //   return baseUrl
+    // },
+  },
+  cookies: {
+    sessionToken: {
+      name: `__Secure-next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+      },
     },
   },
 
-  secret: process.env.NEXTAUTH_SECRET, // Use the secret from .env.local
+  //secret: 'V9LvBRPf7UEdmsnxTGopWPAucYoG3fCMmS3eSLsdtaU=', // Use the secret from .env.local
 });
-
-
-// import Password from "antd/es/input/Password";
-// import NextAuth from "next-auth";
-// import CredentialsProvider from "next-auth/providers/credentials";
-// const sql = require("mssql");
-
-// export default NextAuth({
-//   providers: [
-//     CredentialsProvider({
-//       name: "Credentials",
-//       credentials: {
-//         email: { label: "Email", type: "email", placeholder: "Enter your email" },
-//         password: { label: "Password", type: "password", placeholder: "Enter your password" }
-//       },
-
-//       async authorize(credentials) {
-//         // Extract email and password from credentials
-//         const { email, password } = credentials;
-      
-//         // SQL logic
-//         const user = await new sql.Request()
-//           .input("Email", sql.NVarChar(100), email)
-//           .input("Password", sql.NVarChar(255), password)
-//           .query(`SELECT Email, [Password] FROM userInfo WHERE Email = 'aliahhlim5@gmail.com' AND [Password] = 'ALIAHHLIM5'`);
-      
-//         if (user.recordset.length > 0) {
-//             return user;
-//             //return user.recordset[0]; // Return the user record
-//         } else {
-//           return null;
-//         }
-//       }
-      
-//      /* async authorize(credentials) {
-//         try {
-//           const res = await fetch("http://localhost:4000/api/user/login", {
-//             method: 'POST',
-//             headers: { 'Content-Type': 'application/json' },
-//             body: JSON.stringify({
-//               email: credentials?.email,
-//               password: credentials?.password
-//             })
-//           });
-          
-//           if (!res.ok) {
-//             throw new Error('Invalid credentials');
-//           }
-      
-//           const user = await res.json();
-      
-//           if (user) {
-//             return user;
-//           } else {
-//             return null;
-//           }
-//         } catch (error) {
-//           console.error('Authorization error:', error);
-//           return null;
-//         }
-//       }*/
-      
-//     })
-//   ],
-//   debug: true,
-//   pages: {
-//     signIn: '/users',
-//     //error: '/api/auth/error',  // This is the page shown on error
-//     //signIn: '/signin' // Redirect to your custom login page
-//   },
-
-//   /*
-//   callbacks: {
-//     async signIn({user, account, profile}) {
-//        console.log(user, account, profile); // Check the returned user, account, and profile
-//        return true;
-//     },
-//     async jwt({token, user}) {
-//        if (user) {
-//           token.id = user.id as string;
-//        }
-//        return token;
-//     },
-//     async session({session, token}) {
-//        session.user.id = token.id as string;
-//        return session;
-//     }
-//  },*/
-   
-//   callbacks: {
-//     async jwt({ token, user }) {
-//       if (user) {
-//         token.id = user.id;
-//       }
-//       return token;
-//     },
-//     async session({ session, token }) {
-//       console.log("Session callback:", session, token)
-//       session.user.id = token.id as string;
-//       return session;
-//     },
-//     async redirect({ url, baseUrl }) {
-//       return url.startsWith(baseUrl) ? url : baseUrl;
-//     }
-//   },
-//   secret: process.env.NEXTAUTH_SECRET, // Add this to .env.local
-// });

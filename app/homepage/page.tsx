@@ -1,18 +1,40 @@
 "use client";
 import React from "react";
-import { Breadcrumb, Layout, Menu, theme, Button } from "antd";
+import { Breadcrumb, Layout, Menu, theme, Button, Spin, Skeleton } from "antd";
 import CompanyTable from "../components/table";
-//import { signOut, useSession } from "next-auth/react";
-//import Email from "next-auth/providers/email";
+import { signIn, signOut, useSession } from "next-auth/react";
+import { useRouter } from "next/router";
+import { useEffect } from "react";
+import { useState } from "react";
 
 const { Header, Content, Footer } = Layout;
 
 const App: React.FC = () => {
+  <Skeleton active />;
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
 
-  const userEmail = "user@example.com";
+  // Get session data
+  const { data: session, status } = useSession();
+  //const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    if (status === "unauthenticated") signIn();
+  }, [status]);
+
+  if (status === "loading") {
+    return (
+      <div style={{ marginLeft: "700px", marginTop: "400px" }}>
+        <Spin size="large" />
+      </div>
+    );
+    //setLoading(false);
+  }
+
+  //Fallback user information if session is not available
+  const userEmail = session?.user?.email ?? "user@example.com";
+  const userName = session?.user?.name ?? "User's Name";
 
   return (
     <Layout>
@@ -29,8 +51,7 @@ const App: React.FC = () => {
           </span>
           <Button
             type="primary"
-            onClick={() => console.log("Sign Out Clicked")}
-            href="/users"
+            onClick={() => signOut()} // Sign out using next-auth
           >
             Log Out
           </Button>
@@ -57,13 +78,13 @@ const App: React.FC = () => {
               marginTop: "10px",
             }}
           >
-            WELCOME, USER'S NAME!
+            WELCOME, {userName}!
           </h1>
           <CompanyTable />
         </div>
       </Content>
       <Footer style={{ textAlign: "center" }}>
-        Home Page ©{new Date().getFullYear()} Created by 'Aliah
+        Home Page ©{new Date().getFullYear()} Created by 'Aliah'
       </Footer>
     </Layout>
   );

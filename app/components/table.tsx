@@ -1,9 +1,6 @@
-//Create a Table Data with columns
-//(No., Company Name, Company ID, Description, Created Date) to list down all of the application submitted by the user.
-
 "use client";
 import React, { useEffect, useState } from "react";
-import { Button, Table, theme } from "antd";
+import { Button, Table, message } from "antd";
 import { TableProps } from "antd";
 import Link from "next/link";
 
@@ -12,7 +9,7 @@ interface User {
   name: string;
   companyId: number;
   description: string;
-  date: number;
+  date: string;
 }
 
 const CompanyTable: React.FC = () => {
@@ -22,10 +19,33 @@ const CompanyTable: React.FC = () => {
   useEffect(() => {
     // Fetching user data
     const fetchData = async () => {
-      const res = await fetch("https://jsonplaceholder.typicode.com/users");
-      const usersData: User[] = await res.json();
-      setUsers(usersData);
-      setLoading(false);
+      try {
+        const response = await fetch("http://localhost:4000/application", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch data");
+        }
+
+        const result = await response.json();
+        const formattedData = result.map((item: any, index: number) => ({
+          num: index + 1,
+          name: item.CompanyName,
+          companyId: item.CompanyID,
+          description: item.Description,
+          date: new Date(item.CreatedDate).toLocaleDateString(), // Formatting the date
+        }));
+        setUsers(formattedData);
+      } catch (error) {
+        console.error("Error occurred:", error);
+        message.error("An error occurred while fetching applications");
+      } finally {
+        setLoading(false);
+      }
     };
     fetchData();
   }, []);
@@ -38,25 +58,24 @@ const CompanyTable: React.FC = () => {
   const columns: TableProps<User>["columns"] = [
     {
       title: "No.",
-      dataIndex: "id",
+      dataIndex: "num",
       key: "num",
-      //render: (num) => <a>{num}</a>, // Makes the ID clickable
     },
     {
       title: "Company Name",
       dataIndex: "name",
       key: "name",
-      render: (name) => <a>{name}</a>,
+      render: (name) => <a>{name}</a>, // Makes the company name clickable
     },
     {
       title: "Company ID",
       dataIndex: "companyId",
-      key: "CompanyId",
+      key: "companyId",
     },
     {
       title: "Description",
-      dataIndex: "desc",
-      key: "desc",
+      dataIndex: "description",
+      key: "description",
     },
     {
       title: "Created Date",
@@ -95,7 +114,7 @@ const CompanyTable: React.FC = () => {
         type="primary"
         style={{ marginTop: "20px", marginLeft: "550px", padding: "15px" }}
         onClick={handleClick}
-        href="/users/homepage/form"
+        href="/homepage/form"
       >
         New Application Form
       </Button>

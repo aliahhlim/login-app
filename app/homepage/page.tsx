@@ -1,3 +1,4 @@
+//login-app/app/homepage/page.tsx
 "use client";
 import React from "react";
 import { Breadcrumb, Layout, Menu, theme, Button, Spin, Skeleton } from "antd";
@@ -29,12 +30,23 @@ const App: React.FC = () => {
         <Spin size="large" />
       </div>
     );
-    //setLoading(false);
   }
 
   //Fallback user information if session is not available
-  const userEmail = session?.user?.email ?? "user@example.com";
-  const userName = session?.user?.name ?? "User's Name";
+  // interface User {
+  //   email?: string;
+  //   name?: string;
+  // }
+
+  // interface Session {
+  //   user?: User;
+  // }
+
+  // const userEmail: string = session?.user?.email ?? "user@example.com";
+  // const userName: string = session?.user?.name ?? "User's Name";
+  const userEmail: string = session?.user?.email ?? "user@example.com";
+  const userName: string = session?.user?.name ?? "User's Name";
+  //const userId: string = session?.user?.id ?? "Unknown ID";
 
   return (
     <Layout>
@@ -58,11 +70,10 @@ const App: React.FC = () => {
         </div>
       </Header>
       <Content style={{ padding: "0 48px" }}>
-        <Breadcrumb style={{ margin: "16px 0" }}>
-          <Breadcrumb.Item>Home</Breadcrumb.Item>
-          <Breadcrumb.Item>List</Breadcrumb.Item>
-          <Breadcrumb.Item>App</Breadcrumb.Item>
-        </Breadcrumb>
+        <Breadcrumb
+          style={{ margin: "16px 0" }}
+          items={[{ title: "Home" }, { title: "List" }, { title: "App" }]}
+        />
         <div
           style={{
             background: colorBgContainer,
@@ -72,14 +83,14 @@ const App: React.FC = () => {
           }}
         >
           <h1
-            style={{
-              fontSize: "30px",
-              fontWeight: "bold",
-              marginTop: "10px",
-            }}
+            style={{ fontSize: "30px", fontWeight: "bold", marginTop: "10px" }}
           >
             WELCOME, {userName}!
           </h1>
+          <span style={{ color: "white", marginRight: "20px" }}>
+            {userEmail}
+          </span>
+
           <CompanyTable />
         </div>
       </Content>

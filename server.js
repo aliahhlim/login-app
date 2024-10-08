@@ -32,6 +32,7 @@ sql.connect(config, err => {
     console.log("Connection Successful!");
 });
 
+//for sign up
 app.post("/user", async (request, response) => {
     console.log("Received body:", request.body); // Log the incoming body
 
@@ -61,6 +62,7 @@ app.post("/user", async (request, response) => {
     }
 });
  
+//for login
 app.post('/user/login', async (request, response) => {
     const { email, password } = request.body;
 
@@ -92,6 +94,7 @@ app.post('/user/login', async (request, response) => {
     }
 });
 
+//user specific application
 app.post("/application", async (request, response) => {
     console.log("Received body:", request.body);
 
@@ -166,66 +169,7 @@ app.post("/application", async (request, response) => {
     }
 });
 
-
-// app.post("/application", async (request, response) => {
-//     console.log("Received body:", request.body); // Log the incoming body
-
-//     const {
-//         name,
-//         id,
-//         addressLine1,
-//         addressLine2,
-//         addressLine3,
-//         country,
-//         state,
-//         city,
-//         postcode,
-//         description,
-//     } = request.body;
-
-//     try {
-//         // Check if the company already exists
-//         const existingUser = await new sql.Request()
-//             .input("CompanyID", sql.Int, id) // Ensure type consistency
-//             .query(`SELECT * FROM company WHERE CompanyID = @CompanyID`);
-
-//         if (existingUser.recordset.length > 0) {
-//             return response.status(400).json({ message: "Company already applied." });
-//         }
-
-//         // Insert new company into the database using parameters
-//         await new sql.Request()
-//             .input("CompanyName", sql.NVarChar(100), name)
-//             .input("CompanyID", sql.Int, id) //
-//             .input("Address1", sql.NVarChar(50), addressLine1)
-//             .input("Address2", sql.NVarChar(50), addressLine2)
-//             .input("Address3", sql.NVarChar(50), addressLine3)
-//             .input("Country", sql.NVarChar(50), country)
-//             .input("State", sql.NVarChar(50), state)
-//             .input("City", sql.NVarChar(50), city)
-//             .input("Postcode", sql.Int, postcode)
-//             .input("Description", sql.NVarChar(100), description)
-//             .query(`INSERT INTO company (CompanyName, CompanyID, Address1, Address2, Address3, Country, State, City, Postcode, Description) 
-//                 VALUES (@CompanyName, @CompanyID, @Address1, @Address2, @Address3, @Country, @State, @City, @Postcode, @Description)`);
-
-//         response.status(201).json({ message: "Company applied successfully." });
-
-//         // await new sql.Request(
-//         //     .input()
-//         // )
-//     } catch (error) {
-//         console.error("SQL Error Code:", error.code);
-//         console.error("SQL Error Message:", error.message);
-
-//         // More specific error handling
-//         if (error.code === 'EREQUEST') {
-//             return response.status(400).json({ message: "Invalid request. Please check the input fields." });
-//         }
-
-//         response.status(500).json({ message: "Server error." });
-//     }
-// });
-
+//get list of users
 app.get("/user", (request, response) => {
   // Execute a SELECT query
   new sql.Request().query("SELECT * FROM userInfo", (err, result) => {
@@ -238,6 +182,7 @@ app.get("/user", (request, response) => {
 });
 })
 
+//get all application
 app.get("/application", (request, response) => {
     // Execute a SELECT query
     new sql.Request().query("SELECT * FROM company", (err, result) => {
@@ -250,9 +195,11 @@ app.get("/application", (request, response) => {
   });
   })
 
+  //get user specific apllication
   //this one dia amik userID (try to check if can tukar endpoint)
   app.get('/application/:userId', async (req, res) => {
     const userId = parseInt(req.params.userId);
+    console.log("Received request for UserID:", userId); // Add logging
     
     try {
         const result = await new sql.Request()
@@ -272,26 +219,35 @@ app.get("/application", (request, response) => {
     }
 });
 
-//yang ni buat dia receive company id from clicked company name. (btulkan frontend dulu?)
-app.get('/application/view/:companyId',async(req,res) =>{
-    const companyId = parseInt(req.params.companyId);
-
-    try{
-        const result = await new sql.Request()
+//get specific company details
+app.get("/application/view/:companyId", async (req, res) => {
+    const companyId = parseInt(req.params.companyId); // Parse companyId correctly
+    console.log("Received request for CompanyID:", companyId); // Add logging
+  
+    try {
+      const result = await new sql.Request()
         .input('CompanyID', sql.Int, companyId)
-        .query(`SELECT c.CompanyName, c.CompanyID, c.Address1, c.Address2, c.Address3, 
-            c.Country, c.State, c.City, c.Postcode, c.Description, c.CreatedDate 
-     FROM userApplication ua
-     JOIN company c ON ua.CompanyID = c.CompanyID
-     WHERE ua.UserID = @UserID`);
-
-     res.status(200).json(result.recordset);
-    }catch (error){
-        console.error('Error retrieving application:', error);
-        res.status(500).json({message: 'Server Error.'});
+        //.query(`SELECT * FROM company WHERE CompanyID = @CompanyID`);
+        .query(`
+            SELECT c.CompanyName, c.CompanyID, c.Address1, c.Address2, c.Address3, 
+                   c.Country, c.State, c.City, c.Postcode, c.Description
+            FROM userApplication ua
+            JOIN company c ON ua.CompanyID = c.CompanyID
+            WHERE ua.CompanyID = @CompanyID
+        `);
+      
+      console.log("Fetched company data:", result.recordset); // Log fetched data
+  
+      res.status(200).json(result.recordset);
+  
+    } catch (error) {
+      console.error("Error fetching company data:", error);
+      res.status(500).send("Error fetching company data");
     }
-});
-
+  }
+);
+  
+  
 app.listen(4000, () => {
     console.log("Listening on port 4000...");
 });

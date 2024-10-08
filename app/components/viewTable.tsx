@@ -4,6 +4,11 @@ import { Button, Table, message } from "antd";
 import { TableProps } from "antd";
 import Link from "next/link";
 
+// Define props for ViewForm
+interface ViewFormProps {
+  companyId: string | string[]; // Accept companyId as a prop
+}
+
 interface User {
   name: string;
   id: number;
@@ -17,22 +22,35 @@ interface User {
   description: string;
 }
 
-const ViewForm: React.FC = () => {
+const ViewForm: React.FC<ViewFormProps> = ({ companyId }) => {
   const [users, setUsers] = useState<User[]>([]); // State to store users data
   const [loading, setLoading] = useState<boolean>(true); // Loading state
 
   useEffect(() => {
-    // Fetching user data
     const fetchData = async () => {
+      if (!companyId) {
+        console.log("No companyId provided");
+        return;
+      }
+
+      const companyIdString = Array.isArray(companyId)
+        ? companyId[0]
+        : companyId;
+      console.log("Fetching data for Company ID:", companyIdString); // Debugging log
+
       try {
-        const response = await fetch("http://localhost:4000/application", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
+        const response = await fetch(
+          `http://localhost:4000/application/view/${companyIdString}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
         if (!response.ok) {
+          console.error("Failed to fetch data:", response.statusText);
           throw new Error("Failed to fetch data");
         }
 
@@ -49,88 +67,44 @@ const ViewForm: React.FC = () => {
           postcode: item.Postcode,
           description: item.Description,
         }));
+
+        console.log("Fetched data:", formattedData); // Log fetched data for debugging
         setUsers(formattedData);
       } catch (error) {
-        console.error("Error occurred:", error);
+        console.error("Error occurred during fetch:", error);
         message.error("An error occurred while fetching applications");
       } finally {
         setLoading(false);
       }
     };
+
     fetchData();
-  }, []);
+  }, [companyId]);
+  // effect changes when companyid changes
 
   // Table columns
   const columns: TableProps<User>["columns"] = [
-    {
-      title: "Company Name",
-      dataIndex: "name",
-      key: "name",
-      render: (text: string, record: User) => (
-        <Link
-          href={`/company/${record.id}`}
-          style={{ color: "blue", textDecoration: "underline" }}
-        >
-          {text}
-        </Link>
-      ),
-    },
-    {
-      title: "Company ID",
-      dataIndex: "id",
-      key: "id",
-    },
-    {
-      title: "Address Line 1",
-      dataIndex: "addressLine1",
-      key: "addressLine1",
-    },
-    {
-      title: "Address Line 2",
-      dataIndex: "addressLine2",
-      key: "addressLine2",
-    },
-    {
-      title: "Address Line 3",
-      dataIndex: "addressLine3",
-      key: "addressLine3",
-    },
-    {
-      title: "Country",
-      dataIndex: "country",
-      key: "country",
-    },
-    {
-      title: "State",
-      dataIndex: "state",
-      key: "state",
-    },
-    {
-      title: "City",
-      dataIndex: "city",
-      key: "city",
-    },
-    {
-      title: "Postcode",
-      dataIndex: "postcode",
-      key: "postcode",
-    },
-    {
-      title: "Description",
-      dataIndex: "description",
-      key: "description",
-    },
+    { title: "Company Name", dataIndex: "name", key: "name" },
+    { title: "Company ID", dataIndex: "id", key: "id" },
+    { title: "Address Line 1", dataIndex: "addressLine1", key: "addressLine1" },
+    { title: "Address Line 2", dataIndex: "addressLine2", key: "addressLine2" },
+    { title: "Address Line 3", dataIndex: "addressLine3", key: "addressLine3" },
+    { title: "Country", dataIndex: "country", key: "country" },
+    { title: "State", dataIndex: "state", key: "state" },
+    { title: "City", dataIndex: "city", key: "city" },
+    { title: "Postcode", dataIndex: "postcode", key: "postcode" },
+    { title: "Description", dataIndex: "description", key: "description" },
   ];
 
   return (
     <>
-      <div>
+      <div style={{ backgroundColor: "lightblue" }}>
         <h1
           style={{
-            fontSize: "20px",
+            fontSize: "25px",
             fontWeight: "bold",
-            marginLeft: "520px",
-            marginTop: "10px",
+            textAlign: "center",
+            marginTop: "20px",
           }}
         >
           View Application
@@ -143,18 +117,24 @@ const ViewForm: React.FC = () => {
           dataSource={users} // Data source (fetched users)
           rowKey="id" // Unique key for each row (must have!)
           loading={loading} // Show loading indicator until data is fetched
-          style={{
-            backgroundColor: "lightblue",
-          }} // Table background color
+          style={{ backgroundColor: "lightblue" }} // Table background color
         />
       </div>
-      <Button
-        type="primary"
-        style={{ marginTop: "20px", marginLeft: "550px", padding: "15px" }}
-        href="/homepage"
-      >
-        Back to homepage
-      </Button>
+
+      <Link href="/homepage">
+        <Button
+          type="primary"
+          style={{
+            marginTop: "20px",
+            marginLeft: "50%",
+            transform: "translateX(-50%)",
+            marginBottom: "20px",
+            padding: "15px",
+          }}
+        >
+          Back to homepage
+        </Button>
+      </Link>
     </>
   );
 };

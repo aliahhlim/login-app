@@ -18,7 +18,7 @@ const CompanyTable: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]); // State to store users data
   const [loading, setLoading] = useState<boolean>(true); // Loading state
   const { data: session } = useSession();
-  const userId = session?.user?.id; // Assuming user ID is available here
+  const userId = session?.user?.id;
 
   useEffect(() => {
     if (userId) {
@@ -113,7 +113,9 @@ const CompanyTable: React.FC = () => {
       dataIndex: "name",
       key: "name",
       //render: (name) => <a>{name}</a>, // Makes the company name clickable
-      render: (text: string) => <Link href={`/homepage/view`}>{text}</Link>,
+      render: (name, record) => (
+        <Link href={`/homepage/view/${record.companyId}`}>{name}</Link>
+      ),
     },
     {
       title: "Company ID",

@@ -31,11 +31,11 @@ In the root of the folder, there's server.js where the API endpoints, post/get m
 Next, in the app folder, you can see a page.tsx file which is the initial sign-up page, .env.local file, followed by a few other folders:-
 
 1. Folder 'components'
-   - This folder holds the carousel and tables used in other pages (exported to page.tsx for signup, login and homepage).
+   - This folder holds the carousel and tables used in other pages (exported to page.tsx for signup, login, homepage and view page).
 2. Folder 'users'
    - This folder holds page.tsx file which is the log-in page to access the homepage.
 3. Folder 'homepage'
-   - This folder have a page.tsx file for the homepage and two subfolders named 'form' containing the application form page.tsx file. Another subfolder named 'view' containing the view page.tsx file. to view selected company details table.
+   - This folder have a page.tsx file for the homepage and two subfolders named 'form' containing the application form page.tsx file. Another subfolder named 'view' containing '[ companyId ]' folder that holds the view page.tsx file. to view selected company details table.
 4. Folder 'backend'
    - only contains .env file.
 5. Folder 'api'

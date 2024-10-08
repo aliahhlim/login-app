@@ -1,24 +1,19 @@
-//login-app/app/homepage/page.tsx
 "use client";
 import React from "react";
-import { Breadcrumb, Layout, Menu, theme, Button, Spin, Skeleton } from "antd";
+import { Breadcrumb, Layout, Menu, theme, Button, Spin } from "antd";
 import CompanyTable from "../components/table";
 import { signIn, signOut, useSession } from "next-auth/react";
-import { useRouter } from "next/router";
 import { useEffect } from "react";
-import { useState } from "react";
 
 const { Header, Content, Footer } = Layout;
 
 const App: React.FC = () => {
-  <Skeleton active />;
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
 
   // Get session data
   const { data: session, status } = useSession();
-  //const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     if (status === "unauthenticated") signIn();
@@ -32,24 +27,13 @@ const App: React.FC = () => {
     );
   }
 
-  //Fallback user information if session is not available
-  // interface User {
-  //   email?: string;
-  //   name?: string;
-  // }
-
-  // interface Session {
-  //   user?: User;
-  // }
-
-  // const userEmail: string = session?.user?.email ?? "user@example.com";
-  // const userName: string = session?.user?.name ?? "User's Name";
   const userEmail: string = session?.user?.email ?? "user@example.com";
   const userName: string = session?.user?.name ?? "User's Name";
-  //const userId: string = session?.user?.id ?? "Unknown ID";
 
   return (
-    <Layout>
+    <Layout style={{ minHeight: "100vh" }}>
+      {" "}
+      {/* Ensure the Layout takes full height */}
       <Header
         style={{
           display: "flex",
@@ -62,14 +46,20 @@ const App: React.FC = () => {
             {userEmail}
           </span>
           <Button
-            type="primary"
+            style={{
+              color: "white",
+              backgroundColor: "#E34234",
+              fontWeight: "700",
+            }}
             onClick={() => signOut()} // Sign out using next-auth
           >
             Log Out
           </Button>
         </div>
       </Header>
-      <Content style={{ padding: "0 48px" }}>
+      <Content style={{ padding: "0 48px", flex: "1" }}>
+        {" "}
+        {/* Flex: 1 to expand */}
         <Breadcrumb
           style={{ margin: "16px 0" }}
           items={[{ title: "Home" }, { title: "List" }, { title: "App" }]}

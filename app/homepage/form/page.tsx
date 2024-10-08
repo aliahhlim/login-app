@@ -1,15 +1,12 @@
 "use client";
 import type { FormProps } from "antd";
-import { Form, Input, Button, Divider, message, Skeleton } from "antd"; // Importing necessary components
+import { Form, Input, Button, Divider, message, Skeleton, Spin } from "antd"; // Importing necessary components
 import Link from "next/link"; // Importing Link component for navigation
-import React from "react";
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { signIn } from "next-auth/react";
 import axios from "axios";
-
-/*
-Create a form layout with the following fields:- 
-Company Name- Company ID - Address Line 1/2/3- Country- State- City- Postcode- Description
-*/
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 // For validation purposes
 type FieldType = {
@@ -26,43 +23,57 @@ type FieldType = {
 };
 
 export default function FormPage() {
-  <Skeleton active />;
-  const [loading, setLoading] = useState<boolean>(false);
+  const { data: session, status } = useSession();
+  const [loading, setLoading] = useState<boolean>(false); // Move loading state here
+  const router = useRouter();
 
-  const onFinish: FormProps<FieldType>["onFinish"] = async (values) => {
-    console.log("Form values:", values);
-    setLoading(true); // Start loading state
+  useEffect(() => {
+    if (status === "unauthenticated") signIn();
+  }, [status]);
+
+  if (status === "loading") {
+    return (
+      <div style={{ marginLeft: "700px", marginTop: "400px" }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
+
+  const onFinish = async (values: any) => {
+    if (!session) {
+      message.error("You need to be logged in to submit an application");
+      return;
+    }
+
+    const userId = session?.user?.id;
+
+    const applicationData = {
+      ...values,
+      userId,
+    };
 
     try {
+      setLoading(true);
       const response = await axios.post(
-        "http://localhost:4000/application",
-        values
+        `http://localhost:4000/application`,
+        applicationData
       );
 
+      console.log("Response received:", response); // Log the response for debugging
+
       if (response.status === 201) {
-        message.success("Application submitted successfully!");
-      } else {
-        message.error("Failed to submit application.");
+        message.success("Application submitted successfully");
+        console.log("Redirecting to homepage..."); // Log before redirect
+        router.push("/homepage");
       }
-      console.log("Response:", response.data);
+      // if (response.status === 400) {
+      //   message.error("Duplicate application entry denied.");
+      // }
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
-        if (error.response.status === 409) {
-          // Assuming 409 Conflict for duplicate Company ID
-          message.error(
-            "Company ID already exists. Please use a different ID."
-          );
-        } else {
-          message.error(
-            "Failed to submit application: " + error.response.data.message
-          );
-        }
-      } else {
-        console.error("Error occurred:", error);
-        message.error("An error occurred during submission.");
-      }
+      console.error("Error submitting application:", error);
+      message.error("An error occurred while submitting the application"); // Generic error message
     } finally {
-      setLoading(false); // End loading state
+      setLoading(false);
     }
   };
 
@@ -302,7 +313,7 @@ export default function FormPage() {
                     fontWeight: "500",
                   }}
                 >
-                  Apply Now
+                  Apply
                 </Button>
               </Form.Item>
             </Form>

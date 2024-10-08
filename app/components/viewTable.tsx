@@ -25,7 +25,7 @@ const ViewForm: React.FC = () => {
     // Fetching user data
     const fetchData = async () => {
       try {
-        const response = await fetch(`http://localhost:4000/application`, {
+        const response = await fetch("http://localhost:4000/application", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -66,14 +66,14 @@ const ViewForm: React.FC = () => {
       title: "Company Name",
       dataIndex: "name",
       key: "name",
-      // render: (text: string, record: User) => (
-      //   <Link
-      //     href={`/company/${record.id}`}
-      //     style={{ color: "blue", textDecoration: "underline" }}
-      //   >
-      //     {text}
-      //   </Link>
-      // ),
+      render: (text: string, record: User) => (
+        <Link
+          href={`/company/${record.id}`}
+          style={{ color: "blue", textDecoration: "underline" }}
+        >
+          {text}
+        </Link>
+      ),
     },
     {
       title: "Company ID",
@@ -124,13 +124,13 @@ const ViewForm: React.FC = () => {
 
   return (
     <>
-      <div style={{ backgroundColor: "lightblue" }}>
+      <div>
         <h1
           style={{
-            fontSize: "25px",
+            fontSize: "20px",
             fontWeight: "bold",
-            marginLeft: "640px",
-            marginTop: "20px",
+            marginLeft: "520px",
+            marginTop: "10px",
           }}
         >
           View Application
@@ -150,12 +150,7 @@ const ViewForm: React.FC = () => {
       </div>
       <Button
         type="primary"
-        style={{
-          marginTop: "20px",
-          marginLeft: "650px",
-          marginBottom: "20px",
-          padding: "15px",
-        }}
+        style={{ marginTop: "20px", marginLeft: "550px", padding: "15px" }}
         href="/homepage"
       >
         Back to homepage

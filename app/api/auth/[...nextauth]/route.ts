@@ -1,8 +1,8 @@
 //login-app/app/api/auth/[...nextauth]/route.ts
 import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { JWT } from "next-auth/jwt";
-import { Session } from "next-auth";
+//import { JWT } from "next-auth/jwt";
+//import { Session } from "next-auth";
 const sql = require("mssql");
 
 // Extend JWT and Session types to include user ID

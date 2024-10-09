@@ -59,19 +59,26 @@ export default function FormPage() {
         applicationData
       );
 
-      console.log("Response received:", response); // Log the response for debugging
+      console.log("Response received:", response);
 
       if (response.status === 201) {
         message.success("Application submitted successfully");
-        console.log("Redirecting to homepage..."); // Log before redirect
+        console.log("Redirecting to homepage...");
         router.push("/homepage");
       }
-      // if (response.status === 400) {
-      //   message.error("Duplicate application entry denied.");
-      // }
     } catch (error) {
       console.error("Error submitting application:", error);
-      message.error("An error occurred while submitting the application"); // Generic error message
+      if (axios.isAxiosError(error) && error.response) {
+        if (error.response.status === 400 && error.response.data.message) {
+          message.error(error.response.data.message);
+        } else if (error.response.status === 500 && error.response.data.error) {
+          message.error(`Server error: ${error.response.data.error}`);
+        } else {
+          message.error("An error occurred while submitting the application");
+        }
+      } else {
+        message.error("An unexpected error occurred");
+      }
     } finally {
       setLoading(false);
     }

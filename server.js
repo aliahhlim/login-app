@@ -126,14 +126,18 @@ app.post("/application", async (request, response) => {
 
         // If the application already exists, respond with an error
         if (existingApplication.recordset.length > 0) {
+            await transaction.rollback();
             return response.status(400).json({ message: "You have already applied for this company." });
         }
 
-        
+        //check company existence in database
+        // const existingCompany = await new sql.Request(transaction)
+        //     .input("CompanyID", sql.Int, id)
+        //     .query(`SELECT * FROM company WHERE CompanyID = @CompanyID`);
 
         // Insert new company into the database if it does not exist
-        // You can choose to first check if the company already exists or directly insert as per your application logic
-        await new sql.Request(transaction)
+        //if(existingCompany===0){
+             await new sql.Request(transaction)
             .input("CompanyName", sql.NVarChar(100), name)
             .input("CompanyID", sql.Int, id)
             .input("Address1", sql.NVarChar(50), addressLine1)
@@ -146,7 +150,7 @@ app.post("/application", async (request, response) => {
             .input("Description", sql.NVarChar(100), description)
             .query(`INSERT INTO company (CompanyName, CompanyID, Address1, Address2, Address3, Country, State, City, Postcode, Description) 
                     VALUES (@CompanyName, @CompanyID, @Address1, @Address2, @Address3, @Country, @State, @City, @Postcode, @Description)`);
-
+            //}
         // Insert new application into the `userApplication` table to link the user with the application
         await new sql.Request(transaction)
             .input("UserID", sql.Int, userId)
@@ -159,13 +163,12 @@ app.post("/application", async (request, response) => {
         response.status(201).json({ message: "Company and application registered successfully." });
 
     } catch (error) {
-        console.error("SQL Error Code:", error.code);
-        console.error("SQL Error Message:", error.message);
-
-        // Rollback the transaction in case of an error
+        console.error("SQL Error:", error);
+        if (error.originalError && error.originalError.info) {
+            console.error("Original Error Info:", error.originalError.info);
+        }
         await transaction.rollback();
-
-        response.status(500).json({ message: "Server error." });
+        response.status(500).json({ message: "An error occurred while processing your application.", error: error.message });
     }
 });
 

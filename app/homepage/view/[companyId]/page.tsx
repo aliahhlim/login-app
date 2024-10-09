@@ -7,7 +7,7 @@ const CompanyForm = () => {
 
   return (
     <div>
-      <h1>Company ID: {companyId}</h1>
+      {/*<h1>Company ID: {companyId}</h1>*/}
       {/* Pass companyId as a prop to ViewForm */}
       <ViewForm companyId={companyId} />
     </div>
